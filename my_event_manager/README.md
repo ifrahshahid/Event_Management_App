@@ -1,4 +1,4 @@
-# my_event_manager
+# My Event Manager
 
 Building Event Management System
 
