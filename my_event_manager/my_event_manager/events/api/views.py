@@ -5,7 +5,7 @@ from my_event_manager.events.models import Event
 from .serializers import EventSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
+    queryset = Event.objects.select_related('owner').all()  
     serializer_class = EventSerializer
 
     def get_permissions(self):
@@ -26,4 +26,3 @@ class EventViewSet(viewsets.ModelViewSet):
         if instance.owner != self.request.user:
             raise PermissionDenied("You do not have permissions to delete this event.")
         instance.delete()
-
