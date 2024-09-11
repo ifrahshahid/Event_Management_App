@@ -1,6 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from my_event_manager.events.models import Event
 from .serializers import EventSerializer
 
@@ -26,3 +28,14 @@ class EventViewSet(viewsets.ModelViewSet):
         if instance.owner != self.request.user:
             raise PermissionDenied("You do not have permissions to delete this event.")
         instance.delete()
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def attend(self, request, pk=None):
+        event = self.get_object()
+        user = request.user
+        
+        if user in event.attendees.all():
+            return Response({"detail": "You are already attending this event."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        event.attendees.add(user)
+        return Response({"detail": "Successfully marked as attending."}, status=status.HTTP_200_OK)
