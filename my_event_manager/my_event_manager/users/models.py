@@ -1,15 +1,9 @@
-
-from typing import ClassVar
-
+from typing import ClassVar, Optional
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField
-from django.db.models import EmailField
+from django.db.models import CharField, EmailField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-# from django.db import models 
-
 from .managers import UserManager
-
 
 class User(AbstractUser):
     """
@@ -19,15 +13,15 @@ class User(AbstractUser):
     """
 
     # First and last name do not cover name patterns around the globe
-    name = CharField(_("Name of User"), blank=True, max_length=255)
-    first_name = None  # type: ignore[assignment]
-    last_name = None  # type: ignore[assignment]
-    email = EmailField(_("email address"), unique=True)
-    username = None  # type: ignore[assignment]
-    mobile_number = CharField(max_length=15, blank=True, null=True)
+    name: CharField = CharField(_("Name of User"), blank=True, max_length=255)
+    first_name: None = None  # type: ignore[assignment]
+    last_name: None = None  # type: ignore[assignment]
+    email: EmailField = EmailField(_("email address"), unique=True)
+    username: None = None  # type: ignore[assignment]
+    mobile_number: Optional[CharField] = CharField(max_length=15, blank=True, null=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD: str = "email"
+    REQUIRED_FIELDS: list[str] = []
 
     objects: ClassVar[UserManager] = UserManager()
 
@@ -36,6 +30,5 @@ class User(AbstractUser):
 
         Returns:
             str: URL for user detail.
-
         """
         return reverse("users:detail", kwargs={"pk": self.id})

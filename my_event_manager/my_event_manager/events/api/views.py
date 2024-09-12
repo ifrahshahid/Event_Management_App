@@ -1,3 +1,4 @@
+from typing import List, Type
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
@@ -5,33 +6,34 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from my_event_manager.events.models import Event
 from .serializers import EventSerializer
+from rest_framework.request import Request
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.select_related('owner').all()  
-    serializer_class = EventSerializer
+    queryset: Type[Event] = Event.objects.select_related('owner').all()
+    serializer_class: Type[EventSerializer] = EventSerializer
 
-    def get_permissions(self):
+    def get_permissions(self) -> List[IsAuthenticated | AllowAny]:
         if self.action == 'list':
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: EventSerializer) -> None:
         serializer.save(owner=self.request.user)
 
-    def perform_update(self, serializer):
-        event = self.get_object()
+    def perform_update(self, serializer: EventSerializer) -> None:
+        event: Event = self.get_object()
         if event.owner != self.request.user:
             raise PermissionDenied("You do not have permissions to update this event.")
         serializer.save()
 
-    def perform_destroy(self, instance):
+    def perform_destroy(self, instance: Event) -> None:
         if instance.owner != self.request.user:
             raise PermissionDenied("You do not have permissions to delete this event.")
         instance.delete()
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def attend(self, request, pk=None):
-        event = self.get_object()
+    def attend(self, request: Request, pk: int = None) -> Response:
+        event: Event = self.get_object()
         user = request.user
         
         if user in event.attendees.all():
